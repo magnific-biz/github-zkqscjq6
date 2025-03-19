@@ -1,34 +1,31 @@
-import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { supabase } from "~/db.server";
+import { Link, useLoaderData } from "@remix-run/react";
+import { getEvents } from "~/services/events.server";
 
-export async function loader() {
-  const { data: events, error } = await supabase
-    .from('events')
-    .select('*');
+export const loader = async () => {
+  const events = await getEvents();
+  return events;
+};
 
-  if (error) throw error;
-  return json({ events });
-}
+export default function Events() {
+  const events = useLoaderData<typeof loader>();
 
-export default function EventsPage() {
-  const { events } = useLoaderData<typeof loader>();
-  
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Events</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {events.map(event => (
-          <div key={event.id} className="border p-4 rounded-lg">
-            <h2 className="text-xl font-semibold">{event.title}</h2>
-            <p className="text-gray-600">{event.description}</p>
-            <p className="text-sm mt-2">{event.start_time}</p>
-            <a href={event.url} className="text-blue-500 hover:underline">
-              View Event
-            </a>
-          </div>
-        ))}
-      </div>
+    <div className="flex h-screen flex-col">
+      <header className="flex items-center justify-between p-4">
+        <Link to="/events/new" className="text-blue-600 hover:underline">
+          Share New Event
+        </Link>
+      </header>
+      <main className="flex-1 p-4">
+        <h1 className="mb-4 text-2xl font-bold">All Events</h1>
+        <ul className="space-y-2">
+          {events.map((event, index) => (
+            <li key={index} className="rounded-lg bg-gray-100 p-3">
+              {event.title}
+            </li>
+          ))}
+        </ul>
+      </main>
     </div>
   );
 }

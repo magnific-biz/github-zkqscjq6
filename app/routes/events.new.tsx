@@ -1,57 +1,48 @@
-import { Form, useActionData } from "@remix-run/react";
-import { ActionFunction, json } from "@remix-run/node";
+import { Form, redirect } from "@remix-run/react";
 import { supabase } from "~/db.server";
 
-export const action: ActionFunction = async ({ request }) => {
+export const action = async ({ request }) => {
   const formData = await request.formData();
-  const event = {
-    title: formData.get("title"),
-    description: formData.get("description"),
-    start_time: formData.get("startTime"),
-    end_time: formData.get("endTime"),
-    location: formData.get("location"),
-    url: formData.get("url"),
-    user_id: "current-user-id" // Replace with actual user ID from session
-  };
+  const title = formData.get("title");
 
   const { data, error } = await supabase
-    .from('events')
-    .insert([event]);
+    .from("events")
+    .insert([{ title }])
+    .select();
 
-  if (error) return json({ error: error.message }, { status: 500 });
-  return json({ success: true });
+  if (error) {
+    throw new Response(error.message, { status: 500 });
+  }
+
+  return redirect("/events");
 };
 
-export default function NewEventPage() {
-  const actionData = useActionData();
-  
+export default function NewEvent() {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Add New Event</h1>
-      <Form method="post" className="space-y-4">
-        <div>
-          <label htmlFor="title" className="block mb-2">Title</label>
-          <input 
-            type="text" 
-            name="title"
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-        {/* Add other form fields similarly */}
-        <button 
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Add Event
-        </button>
-        {actionData?.success && (
-          <p className="text-green-500">Event added successfully!</p>
-        )}
-        {actionData?.error && (
-          <p className="text-red-500">{actionData.error}</p>
-        )}
-      </Form>
+    <div className="flex h-screen items-center justify-center">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
+        <h1 className="mb-6 text-2xl font-bold">Share New Event</h1>
+        <Form method="post" className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              Event Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              id="title"
+              required
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Share Event
+          </button>
+        </Form>
+      </div>
     </div>
   );
 }
