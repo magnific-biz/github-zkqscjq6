@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import { getEvents } from "~/services/events.server";
 
 export const loader = async () => {
@@ -7,8 +7,6 @@ export const loader = async () => {
 };
 
 export default function Events() {
-  const events = useLoaderData<typeof loader>();
-
   return (
     <div className="flex h-screen flex-col">
       <header className="flex items-center justify-between p-4">
